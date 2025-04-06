@@ -24,10 +24,13 @@ from rest_framework_simplejwt.views import (
 )
 from Account.views import CustormViewToken
 version_api = config('VERSION_API')
+from Account.views import register, loginview, home, logout, GetUserView
+version_api = config('VERSION_API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path(f'{version_api}/api/auth/', CustormViewToken.as_view(), name='login'),
-    path(f'{version_api}/api/auth/refresh/get', TokenRefreshView.as_view(), name='token_refresh'),
+    path(f'{version_api}/api/auth/login', CustormViewToken.as_view(), name='login'),
+    path(f'{version_api}/api/auth/getUser', GetUserView.as_view(), name='getUser'),
+    path(f'{version_api}/api/auth/getRefresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('account/', include('Account.urls')),
 ]
