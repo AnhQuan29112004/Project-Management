@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p >welcome {{user}}</p>
+    {% if user %}
+    <button id="btnLogout" type="button" onclick="logout()" url={% url 'logoutview' %}>Logout</button>
+    {% endif %}
+</body>
+
+<script>
+    
+
+    function logout() {
+        const url = document.getElementById('btnLogout').getAttribute('url');
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}' 
+            },
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message == "Logout successfully") {
+                window.location.href = data.next;
+            
+            } else {
+                alert("Loi la: ", data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+</script>
+</html>

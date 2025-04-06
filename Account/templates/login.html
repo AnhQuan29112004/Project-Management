@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="loginForm" method="POST">
+        {% csrf_token %}
+        <input type="text" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" onclick="login(this)" url={% url 'login' %}>login</button>
+    </form>
+</body>
+</html>
+
+
+
+<script>
+    function login(button) {
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const url = this.querySelector('button').getAttribute('url');
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ 
+                    "email":username, 
+                    "password":password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message == "Login successfully") {
+                    if(data.next){
+                        window.location.href = data.next;
+                    }
+                    else{
+                        alert("Redirect URL is not provided.");
+                    }
+                } else {
+                    alert("Loi la: ", data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+</script>
