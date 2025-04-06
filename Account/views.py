@@ -87,7 +87,6 @@ class CustormViewToken(TokenObtainPairView):
                 httponly=True, 
                 secure=True,   
                 samesite='Lax', 
-                max_age=3600*24*14 
             )
             
             print(response.cookies['refresh'].value)
