@@ -90,14 +90,6 @@ class CustormViewToken(TokenObtainPairView):
                 max_age=3600*24*14 
             )
             
-            response.set_cookie(
-                key='access',
-                value=data.get("access"),
-                httponly=False,  
-                secure=True,     
-                samesite='Lax',  
-                max_age=3600     
-            )
             print(response.cookies['refresh'].value)
             print(response.cookies['access'].value)
             return response
