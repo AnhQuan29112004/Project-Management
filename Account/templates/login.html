@@ -30,11 +30,11 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}' 
                 },
                 body: JSON.stringify({ 
                     "email":username, 
-                    "password":password })
+                    "password":password }),
+                credentials: 'include',
             })
             .then(response => response.json())
             .then(data => {

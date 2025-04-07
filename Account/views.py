@@ -10,7 +10,8 @@ from .serializers import CustormToken
 from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status
-
+from .authentication import CookieJWTAuthentication
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -19,15 +20,36 @@ def home(request):
     return render(request, 'home.html',{
         "user": request.user,
     })
-def logout(request):
-    response = JsonResponse({"message": "Logout successfully", "next":reverse('home')}, status=status.HTTP_200_OK)
-    response.delete_cookie('refresh')
-    response.delete_cookie('access')
-    return response
+def register(request):  
+    form = RegisterForm()
+    return render(request, 'register.html', {
+        'form': form,   })
+    
+class LogoutAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieJWTAuthentication]
 
-def register(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST or None)
+    def post(self, request):
+        try:
+            response = Response({
+                "message": "Logout successfully", 
+                "next": reverse("loginview")
+            }, status=status.HTTP_200_OK)
+            
+            response.delete_cookie('refresh')
+            response.delete_cookie('access')
+            return response
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterAPI(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        form = RegisterForm(data=request.data)
         if form.is_valid():
             user = CustomUser.objects.create_user(
                 email=form.cleaned_data['email'],
@@ -39,37 +61,43 @@ def register(request):
                 birth=form.cleaned_data['birth']
             )
             user.save()
-            return JsonResponse({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "User registered successfully", 'next':reverse("loginview")}, status=status.HTTP_201_CREATED)
         else:
-            return JsonResponse({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        form = RegisterForm()
-    return render(request, 'register.html',{'form': form})
+            return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 def loginview(request):
     return render(request, 'login.html', )
 
 class GetUserView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [CookieJWTAuthentication]
 
     def get(self, request):
-        user = request.user
-        data = {
-            'email': user.email,
-            'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'phone_number': user.phone_number,
-            'birth': user.birth,
-        }
-        return Response(data, status=status.HTTP_200_OK)
-    
-class CustormViewToken(TokenObtainPairView):
+        try:
+            user = request.user
+            print(user.is_authenticated)
+            data = {
+                'email': user.email,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'phone_number': user.phone_number,
+                'birth': user.birth,
+                'check': user.is_authenticated,
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginAPI(TokenObtainPairView):
     serializer_class = CustormToken
-    
+
     def post(self, request, *args, **kwargs):
+        print(request.data)
         serializer = self.get_serializer(data=request.data)
+        next = request.data.get('next', reverse("home"))
         if (serializer.is_valid()):
             data = serializer.validated_data
             response = Response({
@@ -78,7 +106,7 @@ class CustormViewToken(TokenObtainPairView):
                         "access": data.get("access"),
                     },
                     'Status': 200,
-                    'next': reverse('home')
+                    'next': next
                 }, status=status.HTTP_200_OK)
             
             response.set_cookie(
@@ -88,9 +116,13 @@ class CustormViewToken(TokenObtainPairView):
                 secure=True,   
                 samesite='Lax', 
             )
-            
-            print(response.cookies['refresh'].value)
-            print(response.cookies['access'].value)
+            response.set_cookie(
+                key='access',
+                value=data.get("access"),
+                httponly=True, 
+                secure=True,   
+                samesite='Lax', 
+            )
             return response
         else:
             return Response({

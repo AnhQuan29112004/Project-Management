@@ -6,36 +6,67 @@
     <title>Document</title>
 </head>
 <body>
-    <p >welcome {{user}}</p>
+    <div id="user">User: </div>
     {% if user %}
-    <button id="btnLogout" type="button" onclick="logout()" url={% url 'logoutview' %}>Logout</button>
+    <button id="btnLogout" type="button" onclick="logout()" url={% url 'logout' %}>Logout</button>
     {% endif %}
 </body>
 
 <script>
-    
+    fetch('/v1/api/auth/getUser/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    })
+    .then(response => {
+        if (response.status === 401) {
+            throw new Error('Unauthorized: Please login again');
+        }
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data) {
+            document.getElementById('user').innerText += data.check;
+        } else {
+            document.getElementById('user').innerText += "No user found";
+        }
+    })
 
     function logout() {
         const url = document.getElementById('btnLogout').getAttribute('url');
+        
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}' 
             },
             credentials: 'include',
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401) {
+                throw new Error('Unauthorized: Please login again');
+            }
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.message == "Logout successfully") {
+            if (data.message === "Logout successfully") {
                 window.location.href = data.next;
-            
-            } else {
-                alert("Loi la: ", data.error);
+            } else if (data.error) {
+                alert("Error: " + data.error);
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || "Logout failed. Please try again.");
+        });
     }
-
 </script>
 </html>
