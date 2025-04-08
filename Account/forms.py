@@ -16,7 +16,7 @@ class RegisterForm(forms.ModelForm):
     )
     class Meta:
         model = CustomUser
-        fields = ['email', 'username', 'last_name', 'first_name', 'phone_number', 'birth']
+        fields = ['email', 'username', 'last_name', 'first_name', 'phone_number', 'birth','role']
         widgets = {
             'birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),

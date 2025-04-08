@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
+from django.contrib.auth.decorators import permission_required
 # Create your models here.
 class ManagerUser(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -25,12 +25,17 @@ class ManagerUser(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser):  
+    class RoleChoices(models.TextChoices):
+        ADMIN = 'admin', 'Admin'
+        LECTURER = 'lecturer', 'Lecturer'
+        STUDENT = 'student', 'Student'
     username = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(unique=True, null=False, blank=False)
     phone_number = models.CharField(max_length=15, null=False, blank=False)
     birth = models.DateField()
+    role = models.CharField(max_length=50, choices=RoleChoices.choices, default='', null=False, blank=False)
     
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
@@ -40,10 +45,19 @@ class CustomUser(AbstractBaseUser):
     
     objects = ManagerUser()
     
-    REQUIRED_FIELDS = ['username', 'last_name', 'first_name', 'phone_number', 'birth']
+    REQUIRED_FIELDS = ['username', 'last_name', 'first_name', 'phone_number', 'birth','role']
     USERNAME_FIELD = 'email'
     def has_perm(self, perm, obj=None):
         return self.is_superuser
 
     def has_module_perms(self, app_label):
         return True
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+    

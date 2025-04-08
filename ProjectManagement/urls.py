@@ -28,10 +28,6 @@ version_api = config('VERSION_API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path(f'{version_api}/api/auth/login/', LoginAPI.as_view(), name='login'),
-    path(f'{version_api}/api/auth/register/', RegisterAPI.as_view(), name='register'),
-    path(f'{version_api}/api/auth/getUser/', GetUserView.as_view(), name='getUser'),
-    path(f'{version_api}/api/auth/getAccesstoken/', TokenRefreshView.as_view(), name='token_refresh'),
-    path(f'{version_api}/api/auth/logout/', LogoutAPI.as_view(), name='logout'),
+    path("api/", include('api.urls')),
     path('account/', include('Account.urls')),
 ]

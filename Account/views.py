@@ -95,9 +95,11 @@ class LoginAPI(TokenObtainPairView):
     serializer_class = CustormToken
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
+        print("DATA :",request.data)
+        user = CustomUser.objects.get(email=request.data.get('email'))
         serializer = self.get_serializer(data=request.data)
         next = request.data.get('next', reverse("home"))
+        breakpoint()
         if (serializer.is_valid()):
             data = serializer.validated_data
             response = Response({
@@ -106,7 +108,8 @@ class LoginAPI(TokenObtainPairView):
                         "access": data.get("access"),
                     },
                     'Status': 200,
-                    'next': next
+                    'next': next,
+                    'role': user.role,
                 }, status=status.HTTP_200_OK)
             
             response.set_cookie(
