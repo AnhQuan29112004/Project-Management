@@ -8,7 +8,7 @@ from django.urls import reverse
 from .models import CustomUser
 from .serializers import CustormToken
 from django.http import JsonResponse
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import status
 from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required
@@ -135,3 +135,23 @@ class LoginAPI(TokenObtainPairView):
                 'Status': 400,
                 
             },status=status.HTTP_400_BAD_REQUEST)
+            
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super().post(request, *args, **kwargs)
+            data = {
+                "status": "success",
+                "message": "Token refreshed successfully",
+                "access_token": response.data.get("access"),
+                "code": "SUCCESS",
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            data = {
+                "status": "error",
+                "message": f"Failed to refresh token: {str(e)}",
+                "details": "Invalid or expired refresh token",
+                "code": "ERROR",
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
