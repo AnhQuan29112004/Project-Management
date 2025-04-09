@@ -21,7 +21,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     summary = models.TextField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
-    research_field = models.ManyToManyField(ResearchField, null=True, blank=True)
+    research_field = models.ManyToManyField(ResearchField)
     updated_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='updated_projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
     file = models.FileField(upload_to='projects/files/', null=True, blank=True)
