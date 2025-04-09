@@ -35,6 +35,7 @@ class CustomUser(AbstractBaseUser):
     email = models.EmailField(unique=True, null=False, blank=False)
     phone_number = models.CharField(max_length=15, null=False, blank=False)
     birth = models.DateField()
+    mssv = models.CharField(max_length=10, default='', null=False, blank=False)
     role = models.CharField(max_length=50, choices=RoleChoices.choices, default='', null=False, blank=False)
     
     date_joined = models.DateTimeField(auto_now_add=True)
