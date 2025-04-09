@@ -61,7 +61,7 @@ class RegisterAPI(APIView):
                 birth=form.cleaned_data['birth']
             )
             user.save()
-            return Response({"message": "User registered successfully", 'next':reverse("loginview")}, status=status.HTTP_201_CREATED)
+            return Response({"message": "User registered successfully", 'next':reverse("loginview"), 'code':"SUCCESS"}, status=status.HTTP_201_CREATED)
         else:
             return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -110,6 +110,7 @@ class LoginAPI(TokenObtainPairView):
                     'Status': 200,
                     'next': next,
                     'role': user.role,
+                    'code':"SUCCESS"
                 }, status=status.HTTP_200_OK)
             
             response.set_cookie(
@@ -131,5 +132,6 @@ class LoginAPI(TokenObtainPairView):
             return Response({
                 "message": "Login failed",
                 "error": serializer.errors,
-                'Status': 400
+                'Status': 400,
+                
             },status=status.HTTP_400_BAD_REQUEST)
