@@ -33,6 +33,7 @@ class LogoutAPI(APIView):
         try:
             response = Response({
                 "message": "Logout successfully", 
+                "code": "SUCCESS",
                 "next": reverse("loginview")
             }, status=status.HTTP_200_OK)
             
@@ -41,7 +42,7 @@ class LogoutAPI(APIView):
             return response
             
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e),'code':"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterAPI(APIView):
@@ -61,9 +62,9 @@ class RegisterAPI(APIView):
                 birth=form.cleaned_data['birth']
             )
             user.save()
-            return Response({"message": "User registered successfully", 'next':reverse("loginview"), 'code':"SUCCESS"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "User registered successfully", 'next':reverse("loginview"), 'code':"SUCCESS", 'status':201}, status=status.HTTP_201_CREATED)
         else:
-            return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": form.errors,'code':"ERROR", 'status':400}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def loginview(request):
@@ -88,7 +89,7 @@ class GetUserView(APIView):
             }
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e),'code':"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPI(TokenObtainPairView):
@@ -107,7 +108,7 @@ class LoginAPI(TokenObtainPairView):
                     "data": {
                         "access": data.get("access"),
                     },
-                    'Status': 200,
+                    'status': 200,
                     'next': next,
                     'role': user.role,
                     'code':"SUCCESS"
@@ -132,7 +133,8 @@ class LoginAPI(TokenObtainPairView):
             return Response({
                 "message": "Login failed",
                 "error": serializer.errors,
-                'Status': 400,
+                'status': 400,
+                'code':"ERROR",
                 
             },status=status.HTTP_400_BAD_REQUEST)
             
@@ -141,7 +143,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         try:
             response = super().post(request, *args, **kwargs)
             data = {
-                "status": "success",
+                "status": 200,
                 "message": "Token refreshed successfully",
                 "access_token": response.data.get("access"),
                 "code": "SUCCESS",
@@ -149,7 +151,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             data = {
-                "status": "error",
+                "status": 400,
                 "message": f"Failed to refresh token: {str(e)}",
                 "details": "Invalid or expired refresh token",
                 "code": "ERROR",
