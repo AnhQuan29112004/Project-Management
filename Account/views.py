@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import status
 from .authentication import CookieJWTAuthentication
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 
 # Create your views here.
@@ -42,7 +42,7 @@ class LogoutAPI(APIView):
             return response
             
         except Exception as e:
-            return Response({"error": str(e),'code':"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e),"code":"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterAPI(APIView):
@@ -100,7 +100,6 @@ class LoginAPI(TokenObtainPairView):
         user = CustomUser.objects.get(email=request.data.get('email'))
         serializer = self.get_serializer(data=request.data)
         next = request.data.get('next', reverse("home"))
-        breakpoint()
         if (serializer.is_valid()):
             data = serializer.validated_data
             response = Response({
