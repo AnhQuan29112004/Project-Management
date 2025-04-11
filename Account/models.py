@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import Group, Permission
+
 # Create your models here.
 class ManagerUser(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -8,6 +10,11 @@ class ManagerUser(BaseUserManager):
             raise ValueError("Email must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+        all_roles = CustomUser.RoleChoices.choices
+        if (user.role in [label for _,label in all_roles]):
+            group = Group.objects.get(name=user.role)
+            user.group.add(group)
+            user.save()
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -37,6 +44,7 @@ class CustomUser(AbstractBaseUser):
     birth = models.DateField()
     mssv = models.CharField(max_length=10, default='', null=False, blank=False)
     role = models.CharField(max_length=50, choices=RoleChoices.choices, default='', null=False, blank=False)
+    group = models.ManyToManyField(Group, blank=True)
     
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
