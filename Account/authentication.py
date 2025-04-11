@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework.response import Response
 
 class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
@@ -14,4 +15,4 @@ class CookieJWTAuthentication(JWTAuthentication):
             user = self.get_user(validated_token)
             return (user, validated_token)
         except (InvalidToken, TokenError) as e:
-            raise AuthenticationFailed(str(e))
+            return Response({"error": str(e), "code":"ERROR"}, status=401)
