@@ -12,6 +12,13 @@ class ResearchField(models.Model):
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='created_research_fields')
     def __str__(self):
         return self.name
+    
+    
+class Feedback(models.Model):
+    feedback = models.TextField(max_length=200)
+    feedbacker = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='feedbacker')
+
+
 class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -21,12 +28,15 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     summary = models.TextField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
-    research_field = models.ManyToManyField(ResearchField)
+    research_field = models.ManyToManyField(ResearchField,through='ResearchFieldProject')
     updated_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='updated_projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
+    feedback = models.ForeignKey(Feedback,on_delete=models.CASCADE, related_name="projectfeedback",null=True, blank=True)
     file = models.FileField(upload_to='projects/files/', null=True, blank=True)
-    feedback = models.TextField(null=True, blank=True)
-    feedbacker = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='feedbacker')
     def __str__(self):
         return self.name
+    
+class ResearchFieldProject(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE,related_name="projectresearchfield")
+    researchField = models.ForeignKey(ResearchField,on_delete=models.CASCADE,related_name="researchproject")
     
