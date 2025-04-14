@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group, Permission
 from django.db import transaction
 
 class Command(BaseCommand):
-    help = "add user to group"
+    help = "Add user to group"
     
     def handle(self, *args, **options):
         all_users = CustomUser.objects.all()
@@ -14,6 +14,6 @@ class Command(BaseCommand):
         for i in all_users:
             if (i.role in [label for _,label in all_roles]):
                 group = Group.objects.get(name=i.role)
-                i.group.add(group)
+                i.groups.add(group)
                 i.save()
                 self.stdout.write(self.style.SUCCESS(f"User '{i.email}' added to group '{i.role}'."))

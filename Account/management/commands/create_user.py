@@ -12,7 +12,7 @@ class Command(BaseCommand):
         file_path = options['file']
 
         try:
-            df = pd.read_excel(file_path)
+            df = pd.read_excel(file_path, dtype=str)
             self.stdout.write(self.style.SUCCESS(f'Successfully read Excel file: {file_path}'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error reading Excel file: {str(e)}'))
@@ -26,9 +26,8 @@ class Command(BaseCommand):
 
         for index, row in df.iterrows():
             try:
-                email = f"{row['last_name'].lower()}{row['mssv']}@huce.edu.vn"
+                email = f"{row['last_name'].lower()}{str(row['mssv'])}@huce.edu.vn"
                 password = str(row['mssv'])
-
                 if CustomUser.objects.filter(email=email).exists():
                     self.stdout.write(self.style.WARNING(f'User with email {email} already exists. Skipping...'))
                     continue
