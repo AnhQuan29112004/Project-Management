@@ -12,6 +12,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import status
 from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required, permission_required
+from rest_framework import generics
 
 
 # Create your views here.
