@@ -13,6 +13,7 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             validated_token = self.get_validated_token(access_token)
             user = self.get_user(validated_token)
+            print("USER: ",user)
             return (user, validated_token)
         except (InvalidToken, TokenError) as e:
-            return Response({"error": str(e), "code":"ERROR"}, status=401)
+            raise AuthenticationFailed({"error": "Invalid or expire token", "code":"ERROR", "status":401})
