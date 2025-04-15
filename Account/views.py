@@ -9,7 +9,7 @@ from .models import CustomUser
 from .serializers import CustormToken
 from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework import status
+from rest_framework import status, exceptions
 from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required, permission_required
 from rest_framework import generics
@@ -114,20 +114,6 @@ class LoginAPI(TokenObtainPairView):
                     'code':"SUCCESS"
                 }, status=status.HTTP_200_OK)
             
-            response.set_cookie(
-                key='refresh',
-                value=data.get("refresh"),
-                httponly=True, 
-                secure=True,   
-                samesite='Lax', 
-            )
-            response.set_cookie(
-                key='access',
-                value=data.get("access"),
-                httponly=True, 
-                secure=True,   
-                samesite='Lax', 
-            )
             return response
         else:
             return Response({
@@ -139,13 +125,25 @@ class LoginAPI(TokenObtainPairView):
             },status=status.HTTP_400_BAD_REQUEST)
             
 class CustomTokenRefreshView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
-            response = super().post(request, *args, **kwargs)
+            refresh_token = request.COOKIES.get('refresh')
+            if not refresh_token:
+                raise ValueError("No refresh token found in cookies")
+            
+            serializer = self.get_serializer(data={'refresh': refresh_token})
+
+            try:
+                serializer.is_valid(raise_exception=True)
+            except TokenError as e:
+                raise ValueError("Invalid refresh token")
+
+            response_data = serializer.validated_data
+
             data = {
                 "status": 200,
                 "message": "Token refreshed successfully",
-                "access_token": response.data.get("access"),
+                "access_token": response_data.get("access"),
                 "code": "SUCCESS",
             }
             return Response(data, status=status.HTTP_200_OK)
