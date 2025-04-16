@@ -62,6 +62,7 @@ class DashboardView(ListAPIView):
         }
         return Response(response, status=status.HTTP_200_OK)
     
+    
 class ResearchFieldCreateAPIView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
