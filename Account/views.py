@@ -28,7 +28,7 @@ def register(request):
     
 class LogoutAPI(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
 
     def post(self, request):
         try:
@@ -73,7 +73,7 @@ def loginview(request):
 
 class GetUserView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
@@ -95,7 +95,7 @@ class GetUserView(APIView):
                     "data":data
                 }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": str(e),'code':"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e),'code':"ERROR","status":400}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPI(TokenObtainPairView):
@@ -149,7 +149,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             data = {
                 "status": 200,
                 "message": "Token refreshed successfully",
-                "access_token": response_data.get("access"),
+                "accessToken": response_data.get("access"),
                 "code": "SUCCESS",
             }
             return Response(data, status=status.HTTP_200_OK)

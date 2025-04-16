@@ -28,7 +28,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     summary = models.TextField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
-    research_field = models.ManyToManyField(ResearchField,through='ResearchFieldProject')
+    researchField = models.ManyToManyField(ResearchField,through='ResearchFieldProject')
     updated_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='updated_projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
     feedback = models.ForeignKey(Feedback,on_delete=models.CASCADE, related_name="projectfeedback",null=True, blank=True)
