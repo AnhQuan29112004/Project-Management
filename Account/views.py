@@ -88,7 +88,12 @@ class GetUserView(APIView):
                 'birth': user.birth,
                 'check': user.is_authenticated,
             }
-            return Response(data, status=status.HTTP_200_OK)
+            return Response({
+                    "message": "Get user successfully",
+                    "code":"SUCCESS",
+                    "status":200,
+                    "data":data
+                }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e),'code':"ERROR"}, status=status.HTTP_400_BAD_REQUEST)
 
