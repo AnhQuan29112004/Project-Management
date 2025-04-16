@@ -15,6 +15,9 @@ from Project.models import ResearchField, Project
 from django.template.response import ContentNotRenderedError
 from core.response.get_or_404 import Base_get_or_404
 from Project.pagination_project import PaginationProject
+from rest_framework import filters
+
+
 # Create your views here.
 class DashboardView(ListAPIView):
     queryset = Project.objects.all()
@@ -71,7 +74,6 @@ class ResearchFieldCreateAPIView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        breakpoint()
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         response = {
