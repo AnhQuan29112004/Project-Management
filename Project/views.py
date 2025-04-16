@@ -8,18 +8,19 @@ from django.urls import reverse
 from rest_framework.response import Response
 from Account.authentication import CookieJWTAuthentication
 from Project.permission import HasPermission
-from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView
+from rest_framework import status, exceptions
+from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView, RetrieveAPIView, UpdateAPIView
 from Project.serializer import ResearchSerializer, ProjectListSerializer
 from Project.models import ResearchField, Project
-
+from django.template.response import ContentNotRenderedError
+from core.response.get_or_404 import Base_get_or_404
 
 # Create your views here.
 class DashboardView(ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectListSerializer
     permission_required = 'Project.view_project'
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
 
     def get_permissions(self):
         return [
@@ -44,16 +45,26 @@ class DashboardView(ListAPIView):
             code="permission_denied"
         )
     
-    def get(self, request):
-        data = {
-        "code":"SUCCESS",
-        "status": 200
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        response = {
+            "message":"Get project successfully",
+            "code":"SUCCESS",
+            "status":200,
+            "data":serializer.data
         }
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
     
 class ResearchFieldCreateAPIView(CreateAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     queryset = ResearchField.objects.all()
     serializer_class = ResearchSerializer
     def create(self, request, *args, **kwargs):
@@ -79,7 +90,7 @@ class ResearchFieldCreateAPIView(CreateAPIView):
 class ProjectAddAPIView(CreateAPIView):
     queryset = Project.objects.all()
     permission_required = "Project.add_project"
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     serializer_class = ProjectListSerializer
     def get_permissions(self):
         return [
@@ -114,7 +125,7 @@ class ProjectAddAPIView(CreateAPIView):
         )
 
 class ProjectDeleteAPIView(DestroyAPIView):
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission = "Project.delete_project"
     queryset = Project.objects.all()
     
@@ -146,4 +157,104 @@ class ProjectDeleteAPIView(DestroyAPIView):
         instance.is_deleted = 1
         instance.save()
     
+class ProjectDetailAPIView(RetrieveAPIView):
+    permission = "Project.view_project"
+    authentication_classes = [JWTAuthentication]
+    queryset = Project.objects.filter(is_deleted=0)
+    serializer_class = ProjectListSerializer
+    def get_permissions(self):
+        return [IsAuthenticated(),
+            HasPermission(self.permission)]
         
+    def permission_denied(self, request, message=None, code=None):
+        if request.authenticators and not request.successful_authenticator:
+            raise exceptions.NotAuthenticated()
+        return exceptions.PermissionDenied({
+            "message":"Not have permission",
+            "code":"ERROR",
+            "status":401})
+    
+    def get_object(self):
+        """
+        Returns the object the view is displaying.
+
+        You may want to override this if you need to provide non-standard
+        queryset lookups.  Eg if objects are referenced using multiple
+        keyword arguments in the url conf.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = Base_get_or_404(queryset, **filter_kwargs)
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance:
+            serializer = self.get_serializer(instance)
+            response = {
+                "message":f"Get detail project {instance.name} successfully",
+                "code":"SUCCESS",
+                "status":200,
+                "data":serializer.data
+            }
+        else:
+            response = {
+                "message":f"Object doesn't exist",
+                "code":"ERROR",
+                "status":400,
+            }
+            
+        return Response(response, status=status.HTTP_200_OK if response.get("status") == 200 else status.HTTP_400_BAD_REQUEST) 
+        
+class ProjectUpdateAPIView(UpdateAPIView):
+    queryset = Project.objects.filter(is_deleted=0)
+    serializer_class = ProjectListSerializer
+    permission_required = "Project.change_project"
+    authentication_classes = [JWTAuthentication]
+    
+    def get_permissions(self):
+        return [
+            IsAuthenticated(),
+            HasPermission(self.permission_required)
+        ]
+        
+    def permission_denied(self, request, message=None, code=None):
+        if request.authenticators and not request.successful_authenticator:
+            raise exceptions.NotAuthenticated()
+        return exceptions.PermissionDenied({
+            "message":"Not have permission",
+            "code":"ERROR",
+            "status":401})
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        response = {
+            "status":200,
+            "code":"SUCCESS",
+            "message":f"Update project {instance.name} successfully",
+            "data":serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def perform_update(self, serializer):
+        serializer.save(
+            updated_by_id = self.request.user.id
+        )

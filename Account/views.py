@@ -106,7 +106,8 @@ class LoginAPI(TokenObtainPairView):
             response = Response({
                     "message": "Login successfully",
                     "data": {
-                        "access": data.get("access"),
+                        "accessToken": data.get("access"),
+                        "refreshToken": data.get("refresh"),
                     },
                     'status': 200,
                     'next': next,
