@@ -36,7 +36,10 @@ class PaginationProject(PageNumberPagination):
         return list(self.page)
     def get_paginated_response(self, data):
         return Response({
-            'count': self.page.paginator.count,
+            'totalProject': self.page.paginator.count,
+            'pageIndex': self.page.number,
+            'pageSize': self.page.paginator.per_page,
+            'totalPage': self.page.paginator.num_pages,
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),
             'data': data,

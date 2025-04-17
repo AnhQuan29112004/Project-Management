@@ -20,3 +20,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
             if attrs['start_date'] > attrs['end_date']:
                 raise serializers.ValidationError("Start date must be before end date.")
         return super().validate(attrs)
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['researchField'] = [
+            rf.id for rf in instance.researchField.filter(is_deleted=0)
+        ]
+        return representation

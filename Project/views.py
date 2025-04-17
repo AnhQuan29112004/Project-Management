@@ -15,16 +15,18 @@ from Project.models import ResearchField, Project
 from django.template.response import ContentNotRenderedError
 from core.response.get_or_404 import Base_get_or_404
 from Project.pagination_project import PaginationProject
-from rest_framework import filters
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 # Create your views here.
 class DashboardView(ListAPIView):
-    queryset = Project.objects.all()
+    queryset = Project.objects.filter(is_deleted=0)
     serializer_class = ProjectListSerializer
     permission_required = 'Project.view_project'
     authentication_classes = [JWTAuthentication]
     pagination_class = PaginationProject
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
     def get_permissions(self):
         return [
             IsAuthenticated(),
