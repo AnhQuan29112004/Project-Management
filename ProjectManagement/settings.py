@@ -146,8 +146,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'Project.pagination_project.PaginationProject',
     'PAGE_SIZE': 2,
-    'DATE_FORMAT': '%d-%m-%Y',
-    'DATETIME_FORMAT': '%d-%m-%Y %H:%M:%S',
+    'DATE_FORMAT': '%d/%m/%Y',
+    'DATETIME_FORMAT': '%d/%m/%Y %H:%M:%S',
 }
 
 CORS_ALLOW_CREDENTIALS = True
