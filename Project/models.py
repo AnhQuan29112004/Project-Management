@@ -32,9 +32,9 @@ class Project(models.Model):
     updated_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='updated_projects')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='projects')
     feedback = models.ForeignKey(Feedback,on_delete=models.CASCADE, related_name="projectfeedback",null=True, blank=True)
-    file = models.FileField(upload_to='projects/files/', null=True, blank=True)
+    file = models.JSONField(null=True, blank=True, default=dict)  # Assuming file is a JSON field for storing file metadata
     def __str__(self):
-        return self.name
+        return self.name 
     
 class ResearchFieldProject(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE,related_name="projectresearchfield")

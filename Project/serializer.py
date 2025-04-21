@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from Project.models import Project, Feedback, ResearchField
+from Project.models import Project, Feedback, ResearchField, ResearchFieldProject
 import os
 import datetime
+from django.core.files.storage import FileSystemStorage
 
 class ResearchSerializer(serializers.ModelSerializer):
    
@@ -13,6 +14,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
     researchField = serializers.PrimaryKeyRelatedField(
         queryset=ResearchField.objects.filter(is_deleted=0), many=True, required=False
     )    
+    file = serializers.ListField(
+        child=serializers.FileField(), required=False, allow_empty=True
+    )
     class Meta:
         model = Project
         fields = ['id','name','description','start_date','end_date','summary','file','researchField','created_at','updated_at','updated_by','created_by']
@@ -28,15 +32,29 @@ class ProjectListSerializer(serializers.ModelSerializer):
         representation['researchField'] = [
             rf.id for rf in instance.researchField.filter(is_deleted=0)
         ]
-        representation['file'] = instance.file.url if instance.file else None
+        file_upload = []
+        if instance.file:
+            for file in instance.file:
+                file_upload.append(file)
+        representation['file'] = file_upload
         return representation
     
     def create(self, validated_data):
-        ts = datetime.datetime.now().timestamp()
-        str_ts = str(ts).replace('.','_')
-        file = validated_data.get('file')
-        if file:
-            file.name = f"{str_ts}_{file.name}"
-        
-        validated_data['file'] = file
-        return super().create(validated_data)
+        files = validated_data.pop('file', [])
+        research_fields = validated_data.pop('researchField', [])
+        file_upload = []
+        file_storage = FileSystemStorage(location='media/projects/files')
+
+        for file in files:
+            ts = datetime.datetime.now().timestamp()
+            str_ts = str(ts).replace('.','_')
+            if file:
+                file_storage.save(f"{str_ts}_{file.name}", file)
+            file_upload.append(f"{str_ts}_{file.name}")
+        validated_data['file'] = file_upload
+        project = Project.objects.create(**validated_data)
+        for field in research_fields:
+            ResearchFieldProject.objects.create(
+                project=project, researchField=field
+            )
+        return project
