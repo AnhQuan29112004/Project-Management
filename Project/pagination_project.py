@@ -4,8 +4,8 @@ from django.core.paginator import InvalidPage
 from rest_framework.response import Response
 
 class PaginationProject(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
+    page_size = 6
+    page_size_query_param = 'pageSize'
     max_page_size = 1000
     
     def paginate_queryset(self, queryset, request, view=None):

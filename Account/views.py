@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .forms import RegisterForm
 from django.urls import reverse
-from .models import CustomUser
+from .models import CustomUser, UserProfile
 from .serializers import CustormToken
 from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -13,6 +13,7 @@ from rest_framework import status, exceptions
 from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required, permission_required
 from rest_framework import generics
+from Account.serializers import InforUser
 
 
 # Create your views here.
@@ -161,3 +162,18 @@ class CustomTokenRefreshView(TokenRefreshView):
                 "code": "ERROR",
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        
+class AccountUpdateAPI(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication, CookieJWTAuthentication]
+
+    def get_object(self):
+        return self.request.user
+
+class TestGetAccount(generics.RetrieveAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
