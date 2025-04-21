@@ -16,7 +16,7 @@ from django.template.response import ContentNotRenderedError
 from core.response.get_or_404 import Base_get_or_404
 from Project.pagination_project import PaginationProject
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from .searchbase import CustomSearchFilter
 
 # Create your views here.
 class DashboardView(ListAPIView):
@@ -25,7 +25,7 @@ class DashboardView(ListAPIView):
     permission_required = 'Project.view_project'
     authentication_classes = [JWTAuthentication]
     pagination_class = PaginationProject
-    filter_backends = [SearchFilter]
+    filter_backends = [CustomSearchFilter]
     search_fields = ['name']
     def get_permissions(self):
         return [
@@ -90,6 +90,35 @@ class ResearchFieldCreateAPIView(CreateAPIView):
     def perform_create(self,serializer):
         serializer.save(
             created_by_id = self.request.user.id
+        )
+    
+class ResearchFieldListAPIView(ListAPIView):
+    permission_required = "Project.view_researchfield"
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = ResearchField.objects.filter(is_deleted=0)
+    serializer_class = ResearchSerializer
+    def get_permissions(self):
+        return [
+            IsAuthenticated(),
+            HasPermission(self.permission_required)
+        ]
+        
+    def permission_denied(self, request, message=None, code=None):
+        if request.authenticators and not request.successful_authenticator:
+            raise PermissionDenied(
+                detail={
+                    "code": "ERROR",
+                    "message": "Bạn chưa đăng nhập hoặc thông tin xác thực không hợp lệ."
+                },
+                code="authentication_failed"
+            )
+        raise PermissionDenied(
+            detail={
+                "code": "ERROR",
+                "message": "Bạn không có quyền thực hiện hành động này."
+            },
+            code="permission_denied"
         )
 
 class ProjectAddAPIView(CreateAPIView):

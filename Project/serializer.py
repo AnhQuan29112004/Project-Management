@@ -3,7 +3,7 @@ from Project.models import Project, Feedback, ResearchField
 import os
 import datetime
 
-class ResearchSerializer(serializers.HyperlinkedModelSerializer):
+class ResearchSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = ResearchField
@@ -28,7 +28,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         representation['researchField'] = [
             rf.id for rf in instance.researchField.filter(is_deleted=0)
         ]
-        representation['file'] = os.path.basename(instance.file.name) if instance.file else None
+        representation['file'] = instance.file.url if instance.file else None
         return representation
     
     def create(self, validated_data):
