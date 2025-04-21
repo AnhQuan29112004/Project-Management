@@ -17,12 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from decouple import config
+from django.conf import settings
+from django.conf.urls.static import static
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-version_api = config('VERSION_API')
 from Account.views import RegisterAPI, LogoutAPI, GetUserView,LoginAPI
 version_api = config('VERSION_API')
 
@@ -30,4 +31,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include('api.urls')),
     path('account/', include('Account.urls')),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
