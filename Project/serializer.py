@@ -58,3 +58,32 @@ class ProjectListSerializer(serializers.ModelSerializer):
                 project=project, researchField=field
             )
         return project
+    
+    def update(self, instance, validated_data):
+        files = validated_data.pop('file', [])
+        research_fields = validated_data.pop('researchField', [])
+        file_upload = []
+        file_storage = FileSystemStorage(location='media/projects/files')
+        if files:
+            for file in files:
+                ts = datetime.datetime.now().timestamp()
+                str_ts = str(ts).replace('.','_')
+                if file:
+                    file_storage.save(f"{str_ts}_{file.name}", file)
+                file_upload.append(f"{str_ts}_{file.name}")
+            validated_data['file'] = file_upload
+        else:
+            validated_data['file'] = instance.file
+        all_fields = ResearchFieldProject.objects.all()
+        for field in research_fields:
+            if all_fields.filter(project=instance, researchField=field).exists():
+                continue
+            if field not in research_fields:
+                ResearchFieldProject.objects.filter(
+                    project=instance, researchField=field
+                ).delete()
+            ResearchFieldProject.objects.create(
+                project=instance, researchField=field
+            )
+        
+        return super().update(instance, validated_data)
