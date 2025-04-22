@@ -3,6 +3,7 @@ from Project.models import Project, Feedback, ResearchField, ResearchFieldProjec
 import os
 import datetime
 from django.core.files.storage import FileSystemStorage
+from pathlib import Path
 
 class ResearchSerializer(serializers.ModelSerializer):
    
@@ -60,10 +61,20 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return project
     
     def update(self, instance, validated_data):
+        request = self.context.get('request')
+        fileDelete = request.data.getlist('deletedFiles')
         files = validated_data.pop('file', [])
         research_fields = validated_data.pop('researchField', [])
         file_upload = []
         file_storage = FileSystemStorage(location='media/projects/files')
+        breakpoint()
+        if fileDelete:
+            for file in fileDelete:
+                path = Path(file_storage.path(file))
+                if path.is_file():
+                    file_storage.delete(file)
+                    instance.file.remove(file)
+        
         if files:
             for file in files:
                 ts = datetime.datetime.now().timestamp()

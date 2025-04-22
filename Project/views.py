@@ -275,7 +275,7 @@ class ProjectUpdateAPIView(UpdateAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial,context={'request': request})
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -284,7 +284,7 @@ class ProjectUpdateAPIView(UpdateAPIView):
         response = {
             "status":200,
             "code":"SUCCESS",
-            "message":f"Update project {instance.name} successfully",
+            "message":f"Update project {instance.id} successfully",
             "data":serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
