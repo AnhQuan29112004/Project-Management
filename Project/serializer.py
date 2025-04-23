@@ -50,6 +50,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             for file in instance.file:
                 file_upload.append(file)
         representation['file'] = file_upload
+        representation['feedBack_by'] = instance.feedBack_by.username if instance.feedBack_by else None
         return representation
     
     def create(self, validated_data):
