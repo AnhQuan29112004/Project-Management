@@ -276,18 +276,27 @@ class ProjectUpdateAPIView(UpdateAPIView):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial,context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-        response = {
-            "status":200,
-            "code":"SUCCESS",
-            "message":f"Update project {instance.id} successfully",
-            "data":serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+            response = {
+                "status":200,
+                "code":"SUCCESS",
+                "message":f"Update project {instance.id} successfully",
+                "data":serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except exceptions.ValidationError as e:
+            response = {
+                "status":400,
+                "code":"ERROR",
+                "message":"Update project failed",
+                "error":str(e.detail)
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_update(self, serializer):
         serializer.save(

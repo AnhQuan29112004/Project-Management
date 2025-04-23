@@ -10,9 +10,9 @@ class Command(BaseCommand):
         roles = CustomUser.RoleChoices.choices
         
         for role_value, role_label in roles:
-            group, created = Group.objects.get_or_create(name=role_label)
+            group, created = Group.objects.get_or_create(name=role_value)
             if created:
-                self.stdout.write(self.style.SUCCESS(f"Group '{role_label}' created."))
+                self.stdout.write(self.style.SUCCESS(f"Group '{role_value}' created."))
             else:
-                self.stdout.write(self.style.WARNING(f"Group '{role_label}' already exists."))
+                self.stdout.write(self.style.WARNING(f"Group '{role_value}' already exists."))
         

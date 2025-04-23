@@ -13,7 +13,7 @@ class ManagerUser(BaseUserManager):
         all_roles = CustomUser.RoleChoices.choices
         user.set_password(password)
         user.save(using=self._db)
-        if (user.role in [label for _,label in all_roles]):
+        if (user.role in [value for value,label in all_roles]):
             group = Group.objects.get(name=user.role)
             user.groups.add(group)
             user.save()
