@@ -18,7 +18,6 @@ class ResearchSerializer(serializers.ModelSerializer):
         fields = ['id','name','description','created_at','updated_at','updated_by','created_by']
 
 class ProjectListSerializer(serializers.ModelSerializer):
-    # feedbackData = FeedbackSerializer(required=False,source='feedback')
     feedBack_by = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.filter(is_active=1), required=False
     )
@@ -30,7 +29,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Project
-        fields = ['id','name','description','start_date','end_date','summary','file','feedBack_by','feedBackText','created_at','updated_at','updated_by','created_by','researchField']
+        fields = ['id','name','description','start_date','end_date','summary','file','feedBackText','created_at','updated_at','updated_by','created_by','researchField']
     
     
     def validate(self, attrs):
@@ -52,6 +51,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return representation
     
     def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user
+        validated_data['feedBack_by'] = user.username
         files = validated_data.pop('file', [])
         research_fields = validated_data.pop('researchField', [])
         file_upload = []
@@ -73,6 +75,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         request = self.context.get('request')
+        user = request.user
+        validated_data['feedBack_by'] = user
         fileDelete = request.data.getlist('deletedFiles')
         files = validated_data.pop('file', [])
         breakpoint()

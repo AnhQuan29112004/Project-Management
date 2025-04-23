@@ -141,7 +141,7 @@ class ProjectAddAPIView(CreateAPIView):
         return Response(data,status=status.HTTP_403_FORBIDDEN)
     
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data,context={'request': request})
         serializer.is_valid(raise_exception=True)
         breakpoint()
         self.perform_create(serializer)
