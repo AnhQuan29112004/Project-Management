@@ -42,6 +42,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
         representation['researchField'] = [
             rf.id for rf in instance.researchField.filter(is_deleted=0)
         ]
+        representation['researchFieldName'] = [
+            rf.name for rf in instance.researchField.filter(is_deleted=0)
+        ]
         file_upload = []
         if instance.file:
             for file in instance.file:

@@ -120,6 +120,16 @@ class ResearchFieldListAPIView(ListAPIView):
             },
             code="permission_denied"
         )
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        response = {
+            "message":"Get research field successfully",
+            "code":"SUCCESS",
+            "status":200,
+            "data":serializer.data
+        }
+        return Response(response,status=status.HTTP_200_OK)
 
 class ProjectAddAPIView(CreateAPIView):
     queryset = Project.objects.all()
