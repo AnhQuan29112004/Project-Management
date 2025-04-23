@@ -75,6 +75,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         fileDelete = request.data.getlist('deletedFiles')
         files = validated_data.pop('file', [])
+        breakpoint()
         feedBack = request.data.get('feedBack')
         feedBacker = request.data.get('feedBacker')
         idFeedback = request.data.get('idFeedback')
@@ -95,9 +96,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
                 if file:
                     file_storage.save(f"{str_ts}_{file.name}", file)
                 file_upload.append(f"{str_ts}_{file.name}")
-            validated_data['file'] = file_upload
-        else:
-            validated_data['file'] = instance.file
+            validated_data['file'] = instance.file + file_upload
+        
         all_fields = ResearchFieldProject.objects.all()
         
         
