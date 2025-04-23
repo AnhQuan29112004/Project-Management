@@ -29,7 +29,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Project
-        fields = ['id','name','description','start_date','end_date','summary','file','feedBackText','created_at','updated_at','updated_by','created_by','researchField']
+        fields = ['id','name','description','start_date','end_date','summary','file','feedBack_by','feedBackText','created_at','updated_at','updated_by','created_by','researchField']
     
     
     def validate(self, attrs):
