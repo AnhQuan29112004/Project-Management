@@ -47,7 +47,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             for file in instance.file:
                 file_upload.append(file)
         representation['file'] = file_upload
-        representation['feedBack_by'] = instance.feedback.feedbacker.username if instance.feedback else None
         return representation
     
     def create(self, validated_data):
@@ -79,7 +78,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
         validated_data['feedBack_by'] = user
         fileDelete = request.data.getlist('deletedFiles')
         files = validated_data.pop('file', [])
-        breakpoint()
         feedBack = request.data.get('feedBack')
         feedBacker = request.data.get('feedBacker')
         idFeedback = request.data.get('idFeedback')
