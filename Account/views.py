@@ -199,11 +199,30 @@ class AddUserAPI(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        response = {
+            "message": "User created successfully",
+            "status": 201,
+            "code":"SUCCESS",
+            "data": serializer.validated_data,
+        }
+        return Response(response, status=status.HTTP_201_CREATED)
+    
+class UpdateUserAPI(generics.UpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
     def get_object(self):
         return self.request.user
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
