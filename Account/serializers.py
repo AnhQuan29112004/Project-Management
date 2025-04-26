@@ -30,12 +30,17 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'first_name', 'last_name', 'phone_number', 'birth', 'mssv', 'role']
 
 class InforUser(serializers.ModelSerializer):
+    # user = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile 
         fields = ['address', 'bio']
+    # def get_user(self, obj):
+    #     return AccountSerializer(obj.user).data
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        userAccount = AccountSerializer(instance.user).data
+        representation = {**representation, **userAccount}
         for i,j in AccountSerializer(instance.user).data.items():
             representation[i] = j
         return representation
