@@ -13,7 +13,7 @@ from rest_framework import status, exceptions
 from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required, permission_required
 from rest_framework import generics
-from Account.serializers import InforUser
+from Account.serializers import InforUser, AccountSerializer
 
 
 # Create your views here.
@@ -167,13 +167,43 @@ class AccountUpdateAPI(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = InforUser
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication, CookieJWTAuthentication]
+    authentication_classes = [JWTAuthentication]
 
     def get_object(self):
         return self.request.user
 
-class TestGetAccount(generics.RetrieveAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = InforUser
+
+class GetAccount(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        try:
+            user = request.user
+            inforUser = UserProfile.objects.get(user=user)
+            serializer = InforUser(inforUser)
+            return Response({
+                "message": "Get user successfully",
+                "code":"SUCCESS",
+                "status":200,
+                "data":serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e),'code':"ERROR","status":400}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class AddUserAPI(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self):
+        return self.request.user
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
