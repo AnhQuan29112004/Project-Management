@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from Account.views import RegisterAPI, LogoutAPI, GetUserView,LoginAPI, CustomTokenRefreshView,GetAccount
+from Account.views import RegisterAPI, LogoutAPI, GetUserView,LoginAPI, CustomTokenRefreshView,GetAccount,AddUserAPI
 from Project.views import DashboardView, ResearchFieldCreateAPIView, ProjectAddAPIView, ProjectDeleteAPIView, ProjectDetailAPIView, ProjectUpdateAPIView,ResearchFieldListAPIView
 version_api = config('VERSION_API')
 
@@ -25,5 +25,6 @@ urlpatterns = [
     path(f'{version_api}/project/get/<int:pk>', ProjectDetailAPIView.as_view(), name='projectdetail'),
     path(f'{version_api}/project/update/<int:pk>', ProjectUpdateAPIView.as_view(), name='projectupdate'),
     path(f'{version_api}/account/get', GetAccount.as_view(), name='projectupdate'),
+    path(f'{version_api}/account/create', AddUserAPI.as_view(), name='projectupdate'),
 
 ]
