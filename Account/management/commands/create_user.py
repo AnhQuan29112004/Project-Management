@@ -41,6 +41,7 @@ class Command(BaseCommand):
                     phone_number=str(row['phone_number']),
                     birth=row['birth'],
                     role=row['role'],
+                    mssv=row['mssv']
                 )
 
                 UserProfile.objects.create(user=user)

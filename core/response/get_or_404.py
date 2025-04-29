@@ -5,7 +5,8 @@ class Response_get_or_404(APIException):
     status_code = 404
     default_detail = {
         "mesage":"Object isn't exist",
-        "status":404
+        "status":404,
+        "code":"ERROR"
     }
     default_code = "ERROR"
     
@@ -13,4 +14,4 @@ def Base_get_or_404(queryset, **filter_kwargs):
     try:
         return queryset.get(**filter_kwargs)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
-        Response_get_or_404()
+        raise Response_get_or_404()

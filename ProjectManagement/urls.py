@@ -24,7 +24,6 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from Account.views import RegisterAPI, LogoutAPI, GetUserView,LoginAPI
 version_api = config('VERSION_API')
 
 urlpatterns = [

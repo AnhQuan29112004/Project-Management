@@ -14,6 +14,7 @@ from .authentication import CookieJWTAuthentication
 from django.contrib.auth.decorators import login_required, permission_required
 from rest_framework import generics
 from Account.serializers import InforUser, AccountSerializer
+from core.response.get_or_404 import Base_get_or_404
 
 
 # Create your views here.
@@ -72,32 +73,6 @@ class RegisterAPI(APIView):
 def loginview(request):
     return render(request, 'login.html', )
 
-class GetUserView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        try:
-            user = request.user
-            print(user.is_authenticated)
-            data = {
-                'email': user.email,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'phone_number': user.phone_number,
-                'birth': user.birth,
-                'check': user.is_authenticated,
-            }
-            return Response({
-                    "message": "Get user successfully",
-                    "code":"SUCCESS",
-                    "status":200,
-                    "data":data
-                }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e),'code':"ERROR","status":400}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class LoginAPI(TokenObtainPairView):
     serializer_class = CustormToken
@@ -150,7 +125,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             data = {
                 "status": 200,
                 "message": "Token refreshed successfully",
-                "accessToken": response_data.get("access"),
+                "access": response_data.get("access"),
                 "code": "SUCCESS",
             }
             return Response(data, status=status.HTTP_200_OK)
@@ -173,7 +148,7 @@ class AccountUpdateAPI(generics.UpdateAPIView):
         return self.request.user
 
 
-class GetAccount(APIView):
+class GetCrrUser(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
@@ -192,6 +167,26 @@ class GetAccount(APIView):
             return Response({"error": str(e),'code':"ERROR","status":400}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class GetAllUserAPI(generics.ListAPIView):
+
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(is_deleted=False)
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        breakpoint()
+        serializer = self.get_serializer(queryset, many=True)
+        response = {
+            "message": "Get all users successfully",
+            "status": 200,
+            "code":"SUCCESS",
+            "data": serializer.data,
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
 class AddUserAPI(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -217,12 +212,57 @@ class UpdateUserAPI(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def get_object(self):
-        return self.request.user
-
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response = {
+            "message": "User updated successfully",
+            "status": 200,
+            "code":"SUCCESS",
+            "data": serializer.data,
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
+class DeleteUserAPI(generics.DestroyAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    def get_object(self):
+        """
+        Returns the object the view is displaying.
+
+        You may want to override this if you need to provide non-standard
+        queryset lookups.  Eg if objects are referenced using multiple
+        keyword arguments in the url conf.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = Base_get_or_404(queryset, **filter_kwargs)
+        breakpoint()
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = True
+        instance.save(update_fields=['is_deleted'])
+        response = {
+            "message": "User deleted successfully",
+            "status": 200,
+            "code":"SUCCESS",
+        }
+        return Response(response, status=status.HTTP_200_OK)

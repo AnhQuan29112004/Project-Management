@@ -66,6 +66,8 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     address = models.TextField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"{self.user.username}'s Profile"
     
