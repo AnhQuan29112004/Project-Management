@@ -146,7 +146,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'Project.pagination_project.PaginationProject',
+    'DEFAULT_PAGINATION_CLASS': 'core.shared.pagination_project.Pagination',
     'PAGE_SIZE': 2,
     'DATE_FORMAT': '%d/%m/%Y',
     'DATETIME_FORMAT': '%d/%m/%Y %H:%M:%S',

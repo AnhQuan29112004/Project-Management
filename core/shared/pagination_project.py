@@ -3,7 +3,7 @@ from rest_framework.exceptions import NotFound
 from django.core.paginator import InvalidPage
 from rest_framework.response import Response
 
-class PaginationProject(PageNumberPagination):
+class Pagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'pageSize'
     max_page_size = 1000

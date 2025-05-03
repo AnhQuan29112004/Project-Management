@@ -14,7 +14,7 @@ from Project.serializer import ResearchSerializer, ProjectListSerializer
 from Project.models import ResearchField, Project
 from django.template.response import ContentNotRenderedError
 from core.response.get_or_404 import Base_get_or_404
-from Project.pagination_project import PaginationProject
+from core.shared.pagination_project import Pagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .searchbase import CustomSearchFilter
 
@@ -24,7 +24,7 @@ class DashboardView(ListAPIView):
     serializer_class = ProjectListSerializer
     permission_required = 'Project.view_project'
     authentication_classes = [JWTAuthentication]
-    pagination_class = PaginationProject
+    pagination_class = Pagination
     filter_backends = [CustomSearchFilter]
     def get_permissions(self):
         return [
@@ -90,7 +90,50 @@ class ResearchFieldCreateAPIView(CreateAPIView):
         serializer.save(
             created_by_id = self.request.user.id
         )
-    
+class ResearchFieldListPaginateAPIView(ListAPIView):
+    permission_required = "Project.view_researchfield"
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = Pagination
+    queryset = ResearchField.objects.filter(is_deleted=0)
+    serializer_class = ResearchSerializer
+    def get_permissions(self):
+        return [
+            IsAuthenticated(),
+            HasPermission(self.permission_required)
+        ]
+        
+    def permission_denied(self, request, message=None, code=None):
+        if request.authenticators and not request.successful_authenticator:
+            raise PermissionDenied(
+                detail={
+                    "code": "ERROR",
+                    "message": "Bạn chưa đăng nhập hoặc thông tin xác thực không hợp lệ."
+                },
+                code="authentication_failed"
+            )
+        raise PermissionDenied(
+            detail={
+                "code": "ERROR",
+                "message": "Bạn không có quyền thực hiện hành động này."
+            },
+            code="permission_denied"
+        )
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        response = {
+            "message":"Get research field successfully",
+            "code":"SUCCESS",
+            "status":200,
+            "data":serializer.data
+        }
+        return Response(response,status=status.HTTP_200_OK)
+
 class ResearchFieldListAPIView(ListAPIView):
     permission_required = "Project.view_researchfield"
     permission_classes = [IsAuthenticated]
@@ -121,6 +164,7 @@ class ResearchFieldListAPIView(ListAPIView):
         )
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(queryset, many=True)
         response = {
             "message":"Get research field successfully",
