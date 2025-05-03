@@ -56,9 +56,10 @@ class InforUser(serializers.ModelSerializer):
         return representation
     
     def update(self, instance, validated_data):
-        for key, value in validated_data.items():
-            if hasattr(instance, key):
-                setattr(instance, key, value)
+        data = self.context['request'].data
+        for key, value in data.items():
+            if hasattr(instance.user, key):
+                setattr(instance.user, key, value)
         instance.save()
         return instance
     
