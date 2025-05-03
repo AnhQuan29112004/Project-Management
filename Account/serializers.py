@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework import serializers
 from Account.models import CustomUser, UserProfile
 from django.utils.timezone import now, localtime
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 
@@ -57,10 +57,14 @@ class InforUser(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         data = self.context['request'].data
+        date_obj = datetime.strptime(data["birth"], "%d/%m/%Y").date()
         for key, value in data.items():
             if hasattr(instance.user, key):
-                setattr(instance.user, key, value)
-        instance.save()
+                if key == "birth":
+                    setattr(instance.user, key, date_obj)
+                else:
+                    setattr(instance.user, key, value)
+        instance.user.save()
         return instance
     
         

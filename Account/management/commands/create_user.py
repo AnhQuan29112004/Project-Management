@@ -44,8 +44,6 @@ class Command(BaseCommand):
                     mssv=row['mssv']
                 )
 
-                UserProfile.objects.create(user=user)
-
                 self.stdout.write(self.style.SUCCESS(f'Created user: {email} with password: {password}'))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error creating user at row {index + 2}: {str(e)}'))

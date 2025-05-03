@@ -12,7 +12,7 @@ class Command(BaseCommand):
         all_users = CustomUser.objects.all()
         all_roles = CustomUser.RoleChoices.choices
         for i in all_users:
-            if (i.role in [label for _,label in all_roles]):
+            if (i.role.lower() in [value for value,_ in all_roles]):
                 group = Group.objects.get(name=i.role)
                 i.groups.add(group)
                 i.save()
