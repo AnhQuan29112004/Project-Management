@@ -166,19 +166,31 @@ class GetCrrUser(APIView):
         except Exception as e:
             return Response({"error": str(e),'code':"ERROR","status":400}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class GetAllUserAPI(generics.ListAPIView):
-
+class GetUserById(generics.RetrieveAPIView):
+    queryset = UserProfile.objects.filter(is_deleted=False)
     serializer_class = InforUser
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response = {
+            "code":"SUCCESS",
+            "status":200,
+            "message":"Get user by id succesfully",
+            "data":serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
+class GetAllUserAPI(generics.ListAPIView):
+    serializer_class = InforUser
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get_queryset(self):
         return UserProfile.objects.filter(is_deleted=False)
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        breakpoint()
         serializer = self.get_serializer(queryset, many=True)
         response = {
             "message": "Get all users successfully",
