@@ -26,7 +26,6 @@ class DashboardView(ListAPIView):
     authentication_classes = [JWTAuthentication]
     pagination_class = PaginationProject
     filter_backends = [CustomSearchFilter]
-    search_fields = ['name']
     def get_permissions(self):
         return [
             IsAuthenticated(),
@@ -130,6 +129,49 @@ class ResearchFieldListAPIView(ListAPIView):
             "data":serializer.data
         }
         return Response(response,status=status.HTTP_200_OK)
+    
+class ResearchFieldUpdateAPIView(UpdateAPIView):
+    queryset=ResearchField.objects.filter(is_deleted=False)
+    serializer_class=ResearchSerializer
+    authentication_classes = [JWTAuthentication]
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        response={
+            "code":"SUCCESS",
+            "status":200,
+            "data":serializer.data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    def perform_update(self, serializer):
+        serializer.save()
+    
+class ResearchFieldDeleteAPIView(DestroyAPIView):
+    queryset=ResearchField.objects.filter(is_deleted=False)
+    serializer_class=ResearchSerializer
+    authentication_classes = [JWTAuthentication]
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        response={
+            "code":"SUCCESS",
+            "status":200,
+            "data":""
+        }
+        return Response(response,status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
 
 class ProjectAddAPIView(CreateAPIView):
     queryset = Project.objects.all()

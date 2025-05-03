@@ -56,7 +56,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user
-        validated_data['feedBack_by'] = user.username
+        validated_data['feedBack_by'] = user
         files = validated_data.pop('file', [])
         research_fields = validated_data.pop('researchField', [])
         file_upload = []
