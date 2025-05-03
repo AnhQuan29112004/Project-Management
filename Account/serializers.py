@@ -57,13 +57,9 @@ class InforUser(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         data = self.context['request'].data
-        date_obj = datetime.strptime(data["birth"], "%d/%m/%Y").date()
         for key, value in data.items():
             if hasattr(instance.user, key):
-                if key == "birth":
-                    setattr(instance.user, key, date_obj)
-                else:
-                    setattr(instance.user, key, value)
+                setattr(instance.user, key, value)
         instance.user.save()
         return instance
     
