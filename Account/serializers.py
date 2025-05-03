@@ -46,7 +46,7 @@ class InforUser(serializers.ModelSerializer):
     # user = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile 
-        fields = ['address', 'bio']
+        fields = ['id','address', 'bio']
     # def get_user(self, obj):
     #     return AccountSerializer(obj.user).data
         
