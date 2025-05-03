@@ -43,12 +43,9 @@ class AccountSerializer(serializers.ModelSerializer):
         print(password)
         return CustomUser.objects.create_user(**validated_data)
 class InforUser(serializers.ModelSerializer):
-    # user = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile 
         fields = ['id','address', 'bio']
-    # def get_user(self, obj):
-    #     return AccountSerializer(obj.user).data
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
