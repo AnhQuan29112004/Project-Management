@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from Account.views import GetUserById, RegisterAPI, LogoutAPI,LoginAPI, CustomTokenRefreshView,GetCrrUser,AddUserAPI,DeleteUserAPI,GetAllUserAPI,UpdateUserAPI
-from Project.views import ResearchFieldListPaginateAPIView, ResearchFieldUpdateAPIView, ResearchFieldDeleteAPIView, DashboardView, ResearchFieldCreateAPIView, ProjectAddAPIView, ProjectDeleteAPIView, ProjectDetailAPIView, ProjectUpdateAPIView,ResearchFieldListAPIView
+from Project.views import ResearchFieldGetById, ResearchFieldListPaginateAPIView, ResearchFieldUpdateAPIView, ResearchFieldDeleteAPIView, DashboardView, ResearchFieldCreateAPIView, ProjectAddAPIView, ProjectDeleteAPIView, ProjectDetailAPIView, ProjectUpdateAPIView,ResearchFieldListAPIView
 version_api = config('VERSION_API')
 
 urlpatterns = [
@@ -20,6 +20,7 @@ urlpatterns = [
     path(f'{version_api}/project/get', DashboardView.as_view(), name='projectdashboard'),
     path(f'{version_api}/researchfield/create', ResearchFieldCreateAPIView.as_view(), name='createresearchfield'),
     path(f'{version_api}/researchfield/get', ResearchFieldListAPIView.as_view(), name='createresearchfield'),    
+    path(f'{version_api}/researchfield/get/<int:pk>', ResearchFieldGetById.as_view(), name='createresearchfield'),            
     path(f'{version_api}/researchfield/get/paginate', ResearchFieldListPaginateAPIView.as_view(), name='createresearchfield'),    
     path(f'{version_api}/researchfield/delete/<int:pk>', ResearchFieldDeleteAPIView.as_view(), name='createresearchfield'),
     path(f'{version_api}/researchfield/update/<int:pk>', ResearchFieldUpdateAPIView.as_view(), name='createresearchfield'),        

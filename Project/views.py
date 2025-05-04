@@ -90,6 +90,45 @@ class ResearchFieldCreateAPIView(CreateAPIView):
         serializer.save(
             created_by_id = self.request.user.id
         )
+    
+class ResearchFieldGetById(RetrieveAPIView):
+    permission_required = "Project.view_researchfield"
+    authentication_classes = [JWTAuthentication]
+    queryset = ResearchField.objects.filter(is_deleted=0)
+    serializer_class = ResearchSerializer
+    
+    def get_permissions(self):
+        return [
+            IsAuthenticated(),
+            HasPermission(self.permission_required)
+        ]
+        
+    def permission_denied(self, request, message=None, code=None):
+        if request.authenticators and not request.successful_authenticator:
+            raise PermissionDenied(
+                detail={
+                    "code": "ERROR",
+                    "message": "Bạn chưa đăng nhập hoặc thông tin xác thực không hợp lệ."
+                },
+                code="authentication_failed"
+            )
+        raise PermissionDenied(
+            detail={
+                "code": "ERROR",
+                "message": "Bạn không có quyền thực hiện hành động này."
+            },
+            code="permission_denied"
+        )
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response = {
+            "code":"SUCCESS",
+            "status":200,
+            "data":serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
 class ResearchFieldListPaginateAPIView(ListAPIView):
     permission_required = "Project.view_researchfield"
     permission_classes = [IsAuthenticated]
