@@ -263,7 +263,7 @@ class DeleteUserAPI(generics.DestroyAPIView):
 
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
         obj = Base_get_or_404(queryset, **filter_kwargs)
-        breakpoint()
+        
 
         self.check_object_permissions(self.request, obj)
 

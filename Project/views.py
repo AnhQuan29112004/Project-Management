@@ -278,7 +278,7 @@ class ProjectAddAPIView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data,context={'request': request})
         serializer.is_valid(raise_exception=True)
-        breakpoint()
+        
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         response = {
