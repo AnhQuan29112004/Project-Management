@@ -37,7 +37,7 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'first_name', 'last_name', 'phone_number', 'birth', 'mssv', 'role']
     def create(self, validated_data):
         request = self.context.get('request')
-        password = request.data.get('password', None)
+        password = request.data.get('mssv', None)
         validated_data['password'] = password
         print(validated_data)
         print(password)

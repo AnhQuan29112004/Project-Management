@@ -11,7 +11,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         all_users = CustomUser.objects.all()
         all_roles = CustomUser.RoleChoices.choices
-        breakpoint()
         for i in all_users:
             if (i.role.lower() in [value for value,_ in all_roles]):
                 group = Group.objects.get(name=i.role)

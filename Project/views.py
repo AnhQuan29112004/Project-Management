@@ -20,7 +20,7 @@ from .searchbase import CustomSearchFilter
 
 # Create your views here.
 class DashboardView(ListAPIView):
-    queryset = Project.objects.filter(is_deleted=0)
+    queryset = Project.objects.filter(is_deleted=0).order_by('-created_at')
     serializer_class = ProjectListSerializer
     permission_required = 'Project.view_project'
     authentication_classes = [JWTAuthentication]
