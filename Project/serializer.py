@@ -56,7 +56,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user
-        validated_data['feedBack_by'] = user
         files = validated_data.pop('file', [])
         research_fields = validated_data.pop('researchField', [])
         file_upload = []
@@ -79,7 +78,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
         user = request.user
-        validated_data['feedBack_by'] = user
+        validated_data['feedBack_by'] = user if request.data.get('feedBack') else None
         fileDelete = request.data.getlist('deletedFiles')
         files = validated_data.pop('file', [])
         feedBack = request.data.get('feedBack')

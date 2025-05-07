@@ -20,10 +20,12 @@ class Command(BaseCommand):
 
         content_type_research_field = ContentType.objects.get_for_model(ResearchField)
         view_research_field_perm = Permission.objects.get(codename='view_researchfield', content_type=content_type_research_field)
-        
+        # view_research_field_project_perm= Permission.objects.get(codename='view_researchfieldproject', content_type=content_type_project)
         
         student_group = Group.objects.get(name='Student')
-        student_group.permissions.set([view_project])
+        student_group.permissions.set([
+            view_project,
+            view_research_field_perm,])
 
         lecturer_group = Group.objects.get(name='Lecturer')
         lecturer_group.permissions.set([
@@ -31,7 +33,7 @@ class Command(BaseCommand):
             add_project,
             change_project,
             delete_project,
-            view_research_field_perm
+            view_research_field_perm,
         ])
 
         admin_group = Group.objects.get(name='Admin')
